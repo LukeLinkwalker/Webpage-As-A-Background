@@ -1,4 +1,7 @@
-﻿<style>
+﻿@using Microsoft.JSInterop;
+@inject IJSRuntime JS
+
+<style>
     body {
         margin: 0;
         padding: 0;
@@ -14,9 +17,25 @@
     }
 </style>
 
-<iframe class="vh-100" src="http://localhost:@Port"></iframe>
+<iframe id="frame" class="vh-100" src="http://localhost:@pageHost.Port"></iframe>
+
+<script>
+    function ForceReloadFrame() {
+        document.getElementById('frame').src += '';
+    }
+</script>
 
 @code {
     [Parameter]
-    public int Port { get; set; }
+    public PageHost pageHost { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        pageHost.OnRefreshFrame += OnRefreshFrameHandler;
+    }
+
+    private async void OnRefreshFrameHandler(object? sender, RefreshFrameArgs args)
+    {
+        await JS.InvokeVoidAsync("ForceReloadFrame");
+    }
 }

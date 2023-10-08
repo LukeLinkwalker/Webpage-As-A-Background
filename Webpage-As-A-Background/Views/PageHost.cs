@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components.WebView.WindowsForms;
+﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.WebView.WindowsForms;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -17,7 +18,13 @@ namespace Webpage_As_A_Background
     public partial class PageHost : Form
     {
         private const string RESOURCE_DIR = "resources";
-        private Screen _screen { get; set; }
+        private Screen _screen = null;
+        private FileSystemWatcher _watcher = null;
+        private string _sourcePath = string.Empty;
+        private string _resourcePath = string.Empty;
+
+        public event EventHandler<RefreshFrameArgs> OnRefreshFrame;
+        public int Port { get; set; }
         public string _deviceName { get; set; }
 
         public PageHost(Screen screen, string source)
@@ -28,6 +35,9 @@ namespace Webpage_As_A_Background
             _deviceName = screen.GetDeviceNameSanitized();
             this.Text = $"PageHost_{_deviceName}";
 
+            _resourcePath = Path.Combine(RESOURCE_DIR, _deviceName);
+            SetSourceFolder(source);
+
             // Create resource directory
             if (Directory.Exists(RESOURCE_DIR) == false)
             {
@@ -35,23 +45,14 @@ namespace Webpage_As_A_Background
             }
 
             // Create specific directory for display
-            if (Directory.Exists(Path.Combine(RESOURCE_DIR, _deviceName)) == false)
+            if (Directory.Exists(_resourcePath) == false)
             {
-                Directory.CreateDirectory(Path.Combine(RESOURCE_DIR, _deviceName));
+                Directory.CreateDirectory(_resourcePath);
             }
 
             // Start content server
-            SimpleHTTPServer server = new SimpleHTTPServer(Path.Combine(RESOURCE_DIR, _deviceName));
-            int port = server.Port;
-
-            // Clear content from source folder
-            DeleteContent(Path.Combine(RESOURCE_DIR, _deviceName));
-
-            // Copy content from source folder
-            CopyContent(source, Path.Combine(RESOURCE_DIR, _deviceName));
-
-            // Monitor source folder
-            // FileSystemWatcher -> Callback -> Copy Files -> Force update of UI
+            SimpleHTTPServer server = new SimpleHTTPServer(_resourcePath);
+            this.Port = server.Port;
 
             // Show window
             var services = new ServiceCollection();
@@ -59,24 +60,74 @@ namespace Webpage_As_A_Background
             blazorWebView.HostPage = "wwwroot\\index.html";
             blazorWebView.Services = services.BuildServiceProvider();
             blazorWebView.RootComponents.Add<PageHostView>("#app", new Dictionary<string, object?> {
-                { "Port", port }
+                { "pageHost", this }
             });
+
+            
         }
 
-        public void ChangeSourceFolder(string source)
+        public void SetFileSystemWatcher()
         {
+            if(_watcher != null)
+            {
+                _watcher.EnableRaisingEvents = false;
+                _watcher.Dispose();
+                _watcher = null;
+            }
 
+            _watcher = new FileSystemWatcher(_sourcePath);
+
+            _watcher.NotifyFilter = NotifyFilters.Attributes
+                                 | NotifyFilters.CreationTime
+                                 | NotifyFilters.DirectoryName
+                                 | NotifyFilters.FileName
+                                 | NotifyFilters.LastAccess
+                                 | NotifyFilters.LastWrite
+                                 | NotifyFilters.Security
+                                 | NotifyFilters.Size;
+
+            _watcher.Changed += OnUpdate;
+            _watcher.Created += OnUpdate;
+            _watcher.Deleted += OnUpdate;
+            _watcher.Renamed += OnUpdate;
+
+            _watcher.IncludeSubdirectories = true;
+            _watcher.EnableRaisingEvents = true;
+
+            //FileSystemWatcher watcher = new FileSystemWatcher(source);
+
+        }
+
+        public void SetSourceFolder(string source)
+        {
+            _sourcePath = source;
+
+            // Clear and copy content from source path to resource path
+            UpdateResources();
+
+            // Monitor source folder for changes
+            SetFileSystemWatcher();
+            // FileSystemWatcher -> Callback -> Copy Files -> Force update of UI
+        }
+
+        private void UpdateResources()
+        {
+            // Clear content from resource folder
+            DeleteContent(_resourcePath);
+
+            // Copy content from source folder
+            CopyContent(_sourcePath, _resourcePath);
+
+            // Refresh frame
         }
 
         private void CopyContent(string sourcePath, string targetPath)
         {
-            //Now Create all of the directories
             foreach (string dirPath in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
             {
                 Directory.CreateDirectory(dirPath.Replace(sourcePath, targetPath));
             }
 
-            //Copy all the files & Replaces any files with the same name
             foreach (string newPath in Directory.GetFiles(sourcePath, "*.*", SearchOption.AllDirectories))
             {
                 File.Copy(newPath, newPath.Replace(sourcePath, targetPath), true);
@@ -85,15 +136,12 @@ namespace Webpage_As_A_Background
 
         private void DeleteContent(string resourcePath)
         {
-            string[] directoryPaths = Directory.GetDirectories(resourcePath);
-            string[] filePaths = Directory.GetFiles(resourcePath);
-
-            foreach (string directoryPath in directoryPaths)
+            foreach(string directoryPath in Directory.GetDirectories(resourcePath))
             {
                 Directory.Delete(directoryPath, true);
             }
 
-            foreach (string filePath in filePaths)
+            foreach(string filePath in Directory.GetFiles(resourcePath))
             {
                 File.Delete(filePath);
             }
@@ -108,5 +156,13 @@ namespace Webpage_As_A_Background
             this.WindowState = FormWindowState.Maximized;
             windowInitTimer.Stop();
         }
+
+        private void OnUpdate(object sender, FileSystemEventArgs e)
+        {
+            UpdateResources();
+            OnRefreshFrame?.Invoke(this, new RefreshFrameArgs());
+        }
+
+
     }
 }
