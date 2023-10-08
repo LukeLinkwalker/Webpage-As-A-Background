@@ -11,8 +11,16 @@ namespace Webpage_As_A_Background.Utils
     {
         private static bool isFirstMove = true;
 
+        /// <summary>
+        /// Moves the window in the z-order such that the window is immediatly in 
+        /// front of the desktop background but behind the desktop icons.
+        /// </summary>
+        /// <param name="targetHandle"></param>
         public static void Move(IntPtr targetHandle)
         {
+            // Progman <-> Program Manager (Same window)
+
+            // Sending a message to Progman in order to spawn a window between the desktop background and icons.
             if(isFirstMove == true)
             {
                 IntPtr progman = User32.FindWindow("Progman", null);
@@ -29,6 +37,7 @@ namespace Webpage_As_A_Background.Utils
                 isFirstMove = true;
             }
 
+            // Looping through windows to find the immediatly in front of the Progman window
             IntPtr currentWindowHandle = User32.FindWindowEx(IntPtr.Zero, IntPtr.Zero, null, null);
             while (currentWindowHandle != IntPtr.Zero)
             {
@@ -42,6 +51,7 @@ namespace Webpage_As_A_Background.Utils
                 currentWindowHandle = nextWindowHandle;
             }
 
+            // Updating the parent of 
             User32.SetParent(targetHandle, currentWindowHandle);
         }
 

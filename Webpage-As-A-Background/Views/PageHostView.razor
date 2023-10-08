@@ -34,7 +34,7 @@
         pageHost.OnRefreshFrame += OnRefreshFrameHandler;
     }
 
-    private async void OnRefreshFrameHandler(object? sender, RefreshFrameArgs args)
+    private async void OnRefreshFrameHandler(object? sender, EventArgs args)
     {
         await JS.InvokeVoidAsync("ForceReloadFrame");
     }

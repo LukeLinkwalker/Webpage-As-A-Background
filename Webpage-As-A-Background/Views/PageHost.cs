@@ -23,7 +23,7 @@ namespace Webpage_As_A_Background
         private string _sourcePath = string.Empty;
         private string _resourcePath = string.Empty;
 
-        public event EventHandler<RefreshFrameArgs> OnRefreshFrame;
+        public event EventHandler<EventArgs> OnRefreshFrame;
         public int Port { get; set; }
         public string _deviceName { get; set; }
 
@@ -50,7 +50,7 @@ namespace Webpage_As_A_Background
                 Directory.CreateDirectory(_resourcePath);
             }
 
-            // Start content server
+            // Start content server - needed to serve static files to the PageHost
             SimpleHTTPServer server = new SimpleHTTPServer(_resourcePath);
             this.Port = server.Port;
 
@@ -62,13 +62,15 @@ namespace Webpage_As_A_Background
             blazorWebView.RootComponents.Add<PageHostView>("#app", new Dictionary<string, object?> {
                 { "pageHost", this }
             });
-
-            
         }
 
+        /// <summary>
+        /// Sets and enables a FileSystemWatcher such that an update in the source folder 
+        /// results in the source files being copied to the resource folder and the PageHost is refreshed.
+        /// </summary>
         public void SetFileSystemWatcher()
         {
-            if(_watcher != null)
+            if (_watcher != null)
             {
                 _watcher.EnableRaisingEvents = false;
                 _watcher.Dispose();
@@ -93,11 +95,12 @@ namespace Webpage_As_A_Background
 
             _watcher.IncludeSubdirectories = true;
             _watcher.EnableRaisingEvents = true;
-
-            //FileSystemWatcher watcher = new FileSystemWatcher(source);
-
         }
 
+        /// <summary>
+        /// Sets / updates the source path and updates FileSystemWatcher to reflect the change.
+        /// </summary>
+        /// <param name="source"></param>
         public void SetSourceFolder(string source)
         {
             _sourcePath = source;
@@ -107,9 +110,11 @@ namespace Webpage_As_A_Background
 
             // Monitor source folder for changes
             SetFileSystemWatcher();
-            // FileSystemWatcher -> Callback -> Copy Files -> Force update of UI
         }
 
+        /// <summary>
+        /// Clears resource folder and copies content from source folder to the resource folder.
+        /// </summary>
         private void UpdateResources()
         {
             // Clear content from resource folder
@@ -121,27 +126,27 @@ namespace Webpage_As_A_Background
             // Refresh frame
         }
 
-        private void CopyContent(string sourcePath, string targetPath)
+        private void CopyContent(string sourcePath, string resourcePath)
         {
-            foreach (string dirPath in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
+            foreach (string directoryPath in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
             {
-                Directory.CreateDirectory(dirPath.Replace(sourcePath, targetPath));
+                Directory.CreateDirectory(directoryPath.Replace(sourcePath, resourcePath));
             }
 
-            foreach (string newPath in Directory.GetFiles(sourcePath, "*.*", SearchOption.AllDirectories))
+            foreach (string path in Directory.GetFiles(sourcePath, "*.*", SearchOption.AllDirectories))
             {
-                File.Copy(newPath, newPath.Replace(sourcePath, targetPath), true);
+                File.Copy(path, path.Replace(sourcePath, resourcePath), true);
             }
         }
 
         private void DeleteContent(string resourcePath)
         {
-            foreach(string directoryPath in Directory.GetDirectories(resourcePath))
+            foreach (string directoryPath in Directory.GetDirectories(resourcePath))
             {
                 Directory.Delete(directoryPath, true);
             }
 
-            foreach(string filePath in Directory.GetFiles(resourcePath))
+            foreach (string filePath in Directory.GetFiles(resourcePath))
             {
                 File.Delete(filePath);
             }
@@ -157,12 +162,13 @@ namespace Webpage_As_A_Background
             windowInitTimer.Stop();
         }
 
+        /// <summary>
+        /// Triggers the resource updating workflow and emits an event to the relevant PageHost to force a refresh.
+        /// </summary>
         private void OnUpdate(object sender, FileSystemEventArgs e)
         {
             UpdateResources();
-            OnRefreshFrame?.Invoke(this, new RefreshFrameArgs());
+            OnRefreshFrame?.Invoke(this, null);
         }
-
-
     }
 }
