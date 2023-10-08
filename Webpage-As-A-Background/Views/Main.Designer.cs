@@ -28,7 +28,15 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Main));
             blazorWebView = new Microsoft.AspNetCore.Components.WebView.WindowsForms.BlazorWebView();
+            notifyIcon = new NotifyIcon(components);
+            contextMenuStrip = new ContextMenuStrip(components);
+            openSourceLocationItem = new ToolStripMenuItem();
+            forceReloadItem = new ToolStripMenuItem();
+            exitApplicationItem = new ToolStripMenuItem();
+            contextMenuStrip.SuspendLayout();
             SuspendLayout();
             // 
             // blazorWebView
@@ -36,24 +44,69 @@
             blazorWebView.Dock = DockStyle.Fill;
             blazorWebView.Location = new Point(0, 0);
             blazorWebView.Name = "blazorWebView";
-            blazorWebView.Size = new Size(800, 450);
+            blazorWebView.Size = new Size(0, 0);
             blazorWebView.TabIndex = 0;
             blazorWebView.Text = "blazorWebView";
+            // 
+            // notifyIcon
+            // 
+            notifyIcon.Icon = (Icon)resources.GetObject("notifyIcon.Icon");
+            notifyIcon.Text = "Webpage-As-A-Background";
+            notifyIcon.Visible = true;
+            notifyIcon.MouseClick += notifyIcon_MouseClick;
+            // 
+            // contextMenuStrip
+            // 
+            contextMenuStrip.Items.AddRange(new ToolStripItem[] { openSourceLocationItem, forceReloadItem, exitApplicationItem });
+            contextMenuStrip.Name = "contextMenuStrip";
+            contextMenuStrip.Size = new Size(192, 70);
+            // 
+            // openSourceLocationItem
+            // 
+            openSourceLocationItem.Name = "openSourceLocationItem";
+            openSourceLocationItem.Size = new Size(191, 22);
+            openSourceLocationItem.Text = "Open Source Location";
+            openSourceLocationItem.Click += openSourceLocationItem_Click;
+            // 
+            // forceReloadItem
+            // 
+            forceReloadItem.Name = "forceReloadItem";
+            forceReloadItem.Size = new Size(191, 22);
+            forceReloadItem.Text = "Force Reload";
+            forceReloadItem.Click += forceReloadItem_Click;
+            // 
+            // exitApplicationItem
+            // 
+            exitApplicationItem.Name = "exitApplicationItem";
+            exitApplicationItem.Size = new Size(191, 22);
+            exitApplicationItem.Text = "Exit Application";
+            exitApplicationItem.Click += exitApplicationItem_Click;
             // 
             // Main
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
+            ClientSize = new Size(0, 0);
             Controls.Add(blazorWebView);
+            FormBorderStyle = FormBorderStyle.None;
+            Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "Main";
+            ShowInTaskbar = false;
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "Webpage-As-A-Background";
+            WindowState = FormWindowState.Minimized;
             Load += Main_Load;
+            contextMenuStrip.ResumeLayout(false);
             ResumeLayout(false);
         }
 
         #endregion
 
         private Microsoft.AspNetCore.Components.WebView.WindowsForms.BlazorWebView blazorWebView;
+        private NotifyIcon notifyIcon;
+        private ContextMenuStrip contextMenuStrip;
+        private ToolStripMenuItem openSourceLocationItem;
+        private ToolStripMenuItem forceReloadItem;
+        private ToolStripMenuItem exitApplicationItem;
     }
 }

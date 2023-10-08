@@ -5,8 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -17,17 +19,16 @@ namespace Webpage_As_A_Background
 {
     public partial class PageHost : Form
     {
-        private const string RESOURCE_DIR = "resources";
+        private const string SOURCES_DIR = "sources";
         private Screen _screen = null;
         private FileSystemWatcher _watcher = null;
         private string _sourcePath = string.Empty;
-        private string _resourcePath = string.Empty;
 
         public event EventHandler<EventArgs> OnRefreshFrame;
         public int Port { get; set; }
         public string _deviceName { get; set; }
 
-        public PageHost(Screen screen, string source)
+        public PageHost(Screen screen)
         {
             InitializeComponent();
 
@@ -35,24 +36,27 @@ namespace Webpage_As_A_Background
             _deviceName = screen.GetDeviceNameSanitized();
             this.Text = $"PageHost_{_deviceName}";
 
-            _resourcePath = Path.Combine(RESOURCE_DIR, _deviceName);
-            SetSourceFolder(source);
+            _sourcePath = Path.Combine(SOURCES_DIR, _deviceName);
+            //SetSourceFolder(source);
 
             // Create resource directory
-            if (Directory.Exists(RESOURCE_DIR) == false)
+            if (Directory.Exists(SOURCES_DIR) == false)
             {
-                Directory.CreateDirectory(RESOURCE_DIR);
+                Directory.CreateDirectory(SOURCES_DIR);
             }
 
             // Create specific directory for display
-            if (Directory.Exists(_resourcePath) == false)
+            if (Directory.Exists(_sourcePath) == false)
             {
-                Directory.CreateDirectory(_resourcePath);
+                Directory.CreateDirectory(_sourcePath);
             }
 
             // Start content server - needed to serve static files to the PageHost
-            SimpleHTTPServer server = new SimpleHTTPServer(_resourcePath);
+            SimpleHTTPServer server = new SimpleHTTPServer(_sourcePath);
             this.Port = server.Port;
+
+            // Start FileSystemWatcher
+            SetFileSystemWatcher();
 
             // Show window
             var services = new ServiceCollection();
@@ -98,58 +102,13 @@ namespace Webpage_As_A_Background
         }
 
         /// <summary>
-        /// Sets / updates the source path and updates FileSystemWatcher to reflect the change.
+        /// Opens the source folder in the file explorer.
         /// </summary>
-        /// <param name="source"></param>
-        public void SetSourceFolder(string source)
+        public void OpenSourceFolder()
         {
-            _sourcePath = source;
-
-            // Clear and copy content from source path to resource path
-            UpdateResources();
-
-            // Monitor source folder for changes
-            SetFileSystemWatcher();
-        }
-
-        /// <summary>
-        /// Clears resource folder and copies content from source folder to the resource folder.
-        /// </summary>
-        private void UpdateResources()
-        {
-            // Clear content from resource folder
-            DeleteContent(_resourcePath);
-
-            // Copy content from source folder
-            CopyContent(_sourcePath, _resourcePath);
-
-            // Refresh frame
-        }
-
-        private void CopyContent(string sourcePath, string resourcePath)
-        {
-            foreach (string directoryPath in Directory.GetDirectories(sourcePath, "*", SearchOption.AllDirectories))
-            {
-                Directory.CreateDirectory(directoryPath.Replace(sourcePath, resourcePath));
-            }
-
-            foreach (string path in Directory.GetFiles(sourcePath, "*.*", SearchOption.AllDirectories))
-            {
-                File.Copy(path, path.Replace(sourcePath, resourcePath), true);
-            }
-        }
-
-        private void DeleteContent(string resourcePath)
-        {
-            foreach (string directoryPath in Directory.GetDirectories(resourcePath))
-            {
-                Directory.Delete(directoryPath, true);
-            }
-
-            foreach (string filePath in Directory.GetFiles(resourcePath))
-            {
-                File.Delete(filePath);
-            }
+            Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            string absoluteSourcePath = Path.Combine(Path.GetDirectoryName(assembly.Location), SOURCES_DIR);
+            Process.Start("explorer.exe", absoluteSourcePath);
         }
 
         private void WindowInitTimer_Tick(object? sender, EventArgs e)
@@ -167,7 +126,6 @@ namespace Webpage_As_A_Background
         /// </summary>
         private void OnUpdate(object sender, FileSystemEventArgs e)
         {
-            UpdateResources();
             OnRefreshFrame?.Invoke(this, null);
         }
     }
