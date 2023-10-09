@@ -29,7 +29,7 @@ namespace Webpage_As_A_Background.Utils
         /// If the function fails or times out, the return value is 0. To get extended error information, call GetLastError.If GetLastError returns ERROR_TIMEOUT, then the function timed out.
         /// </returns>
         /// source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessagetimeouta
-        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern IntPtr SendMessageTimeout(
             IntPtr hWnd,
             uint Msg,
@@ -79,7 +79,7 @@ namespace Webpage_As_A_Background.Utils
         /// If the function fails, the return value is NULL.To get extended error information, call GetLastError.
         /// </returns>
         /// source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-findwindowa
-        [DllImport("user32.dll", SetLastError = true)]
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace Webpage_As_A_Background.Utils
         /// If the function fails, the return value is NULL.To get extended error information, call GetLastError.
         /// </returns>
         /// source: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-findwindowexa
-        [DllImport("user32.dll", SetLastError = true)]
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         public static extern IntPtr FindWindowEx(
             IntPtr parentHandle, 
             IntPtr hWndChildAfter, 
