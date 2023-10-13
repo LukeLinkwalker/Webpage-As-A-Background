@@ -20,8 +20,8 @@
 <iframe id="frame" class="vh-100" src="http://localhost:@pageHost.Port"></iframe>
 
 <script>
-    function ForceReloadFrame() {
-        document.getElementById('frame').src += '';
+    function Refresh() {
+        document.getElementById("frame").src += "";
     }
 </script>
 
@@ -36,6 +36,6 @@
 
     private async void OnRefreshFrameHandler(object? sender, EventArgs args)
     {
-        await JS.InvokeVoidAsync("ForceReloadFrame");
+        await JS.InvokeVoidAsync("Refresh");
     }
 }

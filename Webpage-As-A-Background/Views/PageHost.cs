@@ -19,14 +19,14 @@ namespace Webpage_As_A_Background
 {
     public partial class PageHost : Form
     {
-        private const string SOURCES_DIR = "sources";
-        private Screen _screen = null;
-        private FileSystemWatcher _watcher = null;
+        private const string ROOT_DIRECTORY = "source";
+        private Screen _screen;
+        private FileSystemWatcher _watcher;
         private string _sourcePath = string.Empty;
+        private string _deviceName { get; set; }
 
         public event EventHandler<EventArgs> OnRefreshFrame;
         public int Port { get; set; }
-        public string _deviceName { get; set; }
 
         public PageHost(Screen screen)
         {
@@ -34,22 +34,11 @@ namespace Webpage_As_A_Background
 
             _screen = screen;
             _deviceName = screen.GetDeviceNameSanitized();
+            _sourcePath = Path.Combine(ROOT_DIRECTORY, _deviceName);
             this.Text = $"PageHost_{_deviceName}";
 
-            _sourcePath = Path.Combine(SOURCES_DIR, _deviceName);
-            //SetSourceFolder(source);
-
-            // Create resource directory
-            if (Directory.Exists(SOURCES_DIR) == false)
-            {
-                Directory.CreateDirectory(SOURCES_DIR);
-            }
-
-            // Create specific directory for display
-            if (Directory.Exists(_sourcePath) == false)
-            {
-                Directory.CreateDirectory(_sourcePath);
-            }
+            // Create folder that page content is served from
+            CreateDirectories(ROOT_DIRECTORY, _sourcePath);
 
             // Start content server - needed to serve static files to the PageHost
             SimpleHTTPServer server = new SimpleHTTPServer(_sourcePath);
@@ -69,18 +58,21 @@ namespace Webpage_As_A_Background
         }
 
         /// <summary>
+        /// Opens the source folder in the file explorer.
+        /// </summary>
+        public void OpenSourceFolder()
+        {
+            Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            string absoluteSourcePath = Path.Combine(Path.GetDirectoryName(assembly.Location), ROOT_DIRECTORY);
+            Process.Start("explorer.exe", absoluteSourcePath);
+        }
+
+        /// <summary>
         /// Sets and enables a FileSystemWatcher such that an update in the source folder 
         /// results in the source files being copied to the resource folder and the PageHost is refreshed.
         /// </summary>
-        public void SetFileSystemWatcher()
+        private void SetFileSystemWatcher()
         {
-            if (_watcher != null)
-            {
-                _watcher.EnableRaisingEvents = false;
-                _watcher.Dispose();
-                _watcher = null;
-            }
-
             _watcher = new FileSystemWatcher(_sourcePath);
 
             _watcher.NotifyFilter = NotifyFilters.Attributes
@@ -101,16 +93,6 @@ namespace Webpage_As_A_Background
             _watcher.EnableRaisingEvents = true;
         }
 
-        /// <summary>
-        /// Opens the source folder in the file explorer.
-        /// </summary>
-        public void OpenSourceFolder()
-        {
-            Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
-            string absoluteSourcePath = Path.Combine(Path.GetDirectoryName(assembly.Location), SOURCES_DIR);
-            Process.Start("explorer.exe", absoluteSourcePath);
-        }
-
         private void WindowInitTimer_Tick(object? sender, EventArgs e)
         {
             IntPtr hWnd = this.Handle;
@@ -119,6 +101,24 @@ namespace Webpage_As_A_Background
             this.Size = _screen.WorkingArea.Size;
             this.WindowState = FormWindowState.Maximized;
             windowInitTimer.Stop();
+        }
+
+        /// <summary>
+        /// Creates the directories from which the content displayed by the PageHost is served.
+        /// </summary>
+        private void CreateDirectories(string rootDirectory, string deviceDirectory)
+        {
+            // Create resource directory
+            if (Directory.Exists(rootDirectory) == false)
+            {
+                Directory.CreateDirectory(rootDirectory);
+            }
+
+            // Create specific directory for display
+            if (Directory.Exists(deviceDirectory) == false)
+            {
+                Directory.CreateDirectory(deviceDirectory);
+            }
         }
 
         /// <summary>
