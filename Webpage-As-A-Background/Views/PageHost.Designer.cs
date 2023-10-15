@@ -38,13 +38,12 @@
             blazorWebView.Dock = DockStyle.Fill;
             blazorWebView.Location = new Point(0, 0);
             blazorWebView.Name = "blazorWebView";
-            blazorWebView.Size = new Size(0, 0);
+            blazorWebView.Size = new Size(10, 10);
             blazorWebView.TabIndex = 0;
             blazorWebView.Text = "blazorWebView";
             // 
             // windowInitTimer
             // 
-            windowInitTimer.Enabled = true;
             windowInitTimer.Interval = 1000;
             windowInitTimer.Tick += WindowInitTimer_Tick;
             // 
@@ -52,13 +51,14 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(0, 0);
+            ClientSize = new Size(10, 10);
             Controls.Add(blazorWebView);
             FormBorderStyle = FormBorderStyle.None;
             Name = "PageHost";
             StartPosition = FormStartPosition.Manual;
             Text = "PageHost";
             WindowState = FormWindowState.Minimized;
+            Shown += PageHost_Shown;
             ResumeLayout(false);
         }
 

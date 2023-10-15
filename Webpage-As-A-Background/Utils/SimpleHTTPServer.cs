@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Webpage_As_A_Background.Utils
 {
     // Copied from: https://gist.github.com/aksakalli/9191056
-    // Requires administrator rights to run
+    // Requires admin privileges to run
     public class SimpleHTTPServer
     {
         private readonly string[] _indexFiles = {

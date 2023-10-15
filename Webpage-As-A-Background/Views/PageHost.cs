@@ -22,7 +22,7 @@ namespace Webpage_As_A_Background
         private const string ROOT_DIRECTORY = "source";
         private Screen _screen;
         private FileSystemWatcher _watcher;
-        private string _sourcePath = string.Empty;
+        private string _sourcePath { get; set; }
         private string _deviceName { get; set; }
 
         public event EventHandler<EventArgs> OnRefreshFrame;
@@ -53,7 +53,7 @@ namespace Webpage_As_A_Background
             blazorWebView.HostPage = "wwwroot\\index.html";
             blazorWebView.Services = services.BuildServiceProvider();
             blazorWebView.RootComponents.Add<PageHostView>("#app", new Dictionary<string, object?> {
-                { "pageHost", this }
+                { "pageHost", this },
             });
         }
 
@@ -101,6 +101,11 @@ namespace Webpage_As_A_Background
             this.Size = _screen.WorkingArea.Size;
             this.WindowState = FormWindowState.Maximized;
             windowInitTimer.Stop();
+        }
+
+        private void PageHost_Shown(object sender, EventArgs e)
+        {
+            windowInitTimer.Start();
         }
 
         /// <summary>

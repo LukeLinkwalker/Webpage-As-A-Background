@@ -40,23 +40,6 @@ namespace Webpage_As_A_Background
             _pageHosts[0].OpenSourceFolder();
         }
 
-        private void forceReloadItem_Click(object sender, EventArgs e)
-        {
-            foreach (PageHost pageHost in _pageHosts)
-            {
-                pageHost.Close();
-            }
-
-            _pageHosts.Clear();
-
-            foreach (Screen screen in _screens)
-            {
-                PageHost pageHost = new PageHost(screen);
-                pageHost.Show();
-                _pageHosts.Add(pageHost);
-            }
-        }
-
         private void exitApplicationItem_Click(object sender, EventArgs e)
         {
             foreach (PageHost pageHost in _pageHosts)

@@ -34,7 +34,6 @@
             notifyIcon = new NotifyIcon(components);
             contextMenuStrip = new ContextMenuStrip(components);
             openSourceLocationItem = new ToolStripMenuItem();
-            forceReloadItem = new ToolStripMenuItem();
             exitApplicationItem = new ToolStripMenuItem();
             contextMenuStrip.SuspendLayout();
             SuspendLayout();
@@ -57,7 +56,7 @@
             // 
             // contextMenuStrip
             // 
-            contextMenuStrip.Items.AddRange(new ToolStripItem[] { openSourceLocationItem, forceReloadItem, exitApplicationItem });
+            contextMenuStrip.Items.AddRange(new ToolStripItem[] { openSourceLocationItem, exitApplicationItem });
             contextMenuStrip.Name = "contextMenuStrip";
             contextMenuStrip.Size = new Size(192, 70);
             // 
@@ -67,13 +66,6 @@
             openSourceLocationItem.Size = new Size(191, 22);
             openSourceLocationItem.Text = "Open Source Location";
             openSourceLocationItem.Click += openSourceLocationItem_Click;
-            // 
-            // forceReloadItem
-            // 
-            forceReloadItem.Name = "forceReloadItem";
-            forceReloadItem.Size = new Size(191, 22);
-            forceReloadItem.Text = "Force Reload";
-            forceReloadItem.Click += forceReloadItem_Click;
             // 
             // exitApplicationItem
             // 
@@ -106,7 +98,6 @@
         private NotifyIcon notifyIcon;
         private ContextMenuStrip contextMenuStrip;
         private ToolStripMenuItem openSourceLocationItem;
-        private ToolStripMenuItem forceReloadItem;
         private ToolStripMenuItem exitApplicationItem;
     }
 }
