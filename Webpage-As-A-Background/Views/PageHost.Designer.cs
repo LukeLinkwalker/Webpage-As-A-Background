@@ -28,9 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            components = new System.ComponentModel.Container();
             blazorWebView = new Microsoft.AspNetCore.Components.WebView.WindowsForms.BlazorWebView();
-            windowInitTimer = new System.Windows.Forms.Timer(components);
             SuspendLayout();
             // 
             // blazorWebView
@@ -38,23 +36,19 @@
             blazorWebView.Dock = DockStyle.Fill;
             blazorWebView.Location = new Point(0, 0);
             blazorWebView.Name = "blazorWebView";
-            blazorWebView.Size = new Size(10, 10);
+            blazorWebView.Size = new Size(408, 287);
             blazorWebView.TabIndex = 0;
             blazorWebView.Text = "blazorWebView";
-            // 
-            // windowInitTimer
-            // 
-            windowInitTimer.Interval = 1000;
-            windowInitTimer.Tick += WindowInitTimer_Tick;
             // 
             // PageHost
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(10, 10);
+            ClientSize = new Size(408, 287);
             Controls.Add(blazorWebView);
             FormBorderStyle = FormBorderStyle.None;
             Name = "PageHost";
+            ShowInTaskbar = false;
             StartPosition = FormStartPosition.Manual;
             Text = "PageHost";
             WindowState = FormWindowState.Minimized;
@@ -65,6 +59,5 @@
         #endregion
 
         private Microsoft.AspNetCore.Components.WebView.WindowsForms.BlazorWebView blazorWebView;
-        private System.Windows.Forms.Timer windowInitTimer;
     }
 }

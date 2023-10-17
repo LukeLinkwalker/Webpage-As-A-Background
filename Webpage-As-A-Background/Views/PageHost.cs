@@ -11,6 +11,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Windows.Forms;
 using Webpage_As_A_Background.Utils;
 using Webpage_As_A_Background.Views;
@@ -24,6 +25,7 @@ namespace Webpage_As_A_Background
         private FileSystemWatcher _watcher;
         private string _sourcePath { get; set; }
         private string _deviceName { get; set; }
+        private int _parentPID { get; set; }
 
         public event EventHandler<EventArgs> OnRefreshFrame;
         public int Port { get; set; }
@@ -58,16 +60,6 @@ namespace Webpage_As_A_Background
         }
 
         /// <summary>
-        /// Opens the source folder in the file explorer.
-        /// </summary>
-        public void OpenSourceFolder()
-        {
-            Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
-            string absoluteSourcePath = Path.Combine(Path.GetDirectoryName(assembly.Location), ROOT_DIRECTORY);
-            Process.Start("explorer.exe", absoluteSourcePath);
-        }
-
-        /// <summary>
         /// Sets and enables a FileSystemWatcher such that an update in the source folder 
         /// results in the source files being copied to the resource folder and the PageHost is refreshed.
         /// </summary>
@@ -93,19 +85,29 @@ namespace Webpage_As_A_Background
             _watcher.EnableRaisingEvents = true;
         }
 
-        private void WindowInitTimer_Tick(object? sender, EventArgs e)
-        {
-            IntPtr hWnd = this.Handle;
-            Window.Move(hWnd);
-            this.Location = _screen.WorkingArea.Location;
-            this.Size = _screen.WorkingArea.Size;
-            this.WindowState = FormWindowState.Maximized;
-            windowInitTimer.Stop();
-        }
-
         private void PageHost_Shown(object sender, EventArgs e)
         {
-            windowInitTimer.Start();
+            DelayedInit();
+        }
+
+        private void DelayedInit()
+        {
+            var timer = new System.Timers.Timer
+            {
+                AutoReset = false,
+                Interval = 1000
+            };
+
+            timer.Elapsed += new ElapsedEventHandler((object? sender, ElapsedEventArgs e) =>
+            {
+                IntPtr hWnd = this.Handle;
+                Window.Move(hWnd);
+                this.Location = _screen.WorkingArea.Location;
+                this.Size = _screen.WorkingArea.Size;
+                this.WindowState = FormWindowState.Maximized;
+            });
+
+            timer.Start();
         }
 
         /// <summary>

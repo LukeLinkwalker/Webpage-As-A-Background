@@ -43,7 +43,7 @@
             blazorWebView.Dock = DockStyle.Fill;
             blazorWebView.Location = new Point(0, 0);
             blazorWebView.Name = "blazorWebView";
-            blazorWebView.Size = new Size(0, 0);
+            blazorWebView.Size = new Size(368, 400);
             blazorWebView.TabIndex = 0;
             blazorWebView.Text = "blazorWebView";
             // 
@@ -58,7 +58,7 @@
             // 
             contextMenuStrip.Items.AddRange(new ToolStripItem[] { openSourceLocationItem, exitApplicationItem });
             contextMenuStrip.Name = "contextMenuStrip";
-            contextMenuStrip.Size = new Size(192, 70);
+            contextMenuStrip.Size = new Size(192, 48);
             // 
             // openSourceLocationItem
             // 
@@ -78,7 +78,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(0, 0);
+            ClientSize = new Size(368, 400);
             Controls.Add(blazorWebView);
             FormBorderStyle = FormBorderStyle.None;
             Icon = (Icon)resources.GetObject("$this.Icon");
